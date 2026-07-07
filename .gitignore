@@ -1,0 +1,18 @@
+# Binaries
+/fern
+/bin/
+/dist/
+
+# Env & secrets
+.env
+*.pem
+*.key
+
+# Go
+vendor/
+coverage.out
+
+# OS / editor
+.DS_Store
+.idea/
+*.swp
