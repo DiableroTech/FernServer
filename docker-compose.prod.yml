@@ -1,0 +1,45 @@
+# Production-ish stack: Postgres + FernServer.
+# Dev Postgres-only stack stays in docker-compose.yml (go run ./cmd/fern on the host).
+#
+# Before first run, copy .env.example → .env and set secrets.
+# IMPORTANT: DATABASE_URL must use host "db" (the service name below), not localhost:
+#   postgres://fern:fern@db:5432/fern?sslmode=disable
+#
+# Local test:
+#   docker compose -f docker-compose.prod.yml up --build
+#   curl http://localhost:8080/health
+#
+# EC2 (same command after git clone + .env):
+#   docker compose -f docker-compose.prod.yml up -d --build
+
+services:
+  db:
+    image: pgvector/pgvector:pg17
+    container_name: fern-db
+    environment:
+      POSTGRES_USER: fern
+      POSTGRES_PASSWORD: fern
+      POSTGRES_DB: fern
+    volumes:
+      - fern-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U fern"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+    # No ports:5432 published — only the server container talks to db on the internal network.
+
+  server:
+    build: .
+    container_name: fern-server
+    env_file: .env
+    ports:
+      - "8080:8080"
+    depends_on:
+      db:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  fern-pgdata:

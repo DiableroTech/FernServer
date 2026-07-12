@@ -1,0 +1,27 @@
+# Keep secrets and junk out of the Docker build context.
+# Without this, `docker build` would COPY .env into the image layer cache.
+
+.env
+.env.*
+*.pem
+*.key
+
+.git
+.gitignore
+.DS_Store
+.idea/
+
+# Local binaries / build output
+/fern
+/bin/
+/dist/
+out/
+
+# Dev-only; not needed in the runtime image
+cmd/wstest/
+docs/
+*.md
+!migrations/*.sql
+
+# Default dev compose — prod uses docker-compose.prod.yml
+docker-compose.yml
